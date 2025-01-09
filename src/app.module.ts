@@ -1,7 +1,14 @@
+// app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import * as dotenv from 'dotenv';
+import { Todo } from './entities/todo.entity';
+import { User } from './entities/user.entity';
+import { AuthModule } from './auth/auth.module';
+
+dotenv.config();
 
 @Module({
   imports: [
@@ -13,9 +20,11 @@ import { AppService } from './app.service';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: ["src/entities/*.ts"],
-      migrations: ["src/migrations/*.ts"],  
+      migrations: ["src/migrations/*.ts"],
       synchronize: false,
     }),
+    TypeOrmModule.forFeature([Todo, User]),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
