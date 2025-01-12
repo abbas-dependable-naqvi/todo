@@ -15,6 +15,8 @@ export class TodoTableMigration1649246385000 implements MigrationInterface {
         "description" character varying, 
         "state" "todo_state" NOT NULL DEFAULT 'pending',
         "userId" integer NOT NULL, 
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+        "deletedAt" TIMESTAMP, 
         CONSTRAINT "PK_12345" PRIMARY KEY ("id")
       );
       CREATE INDEX "IDX_todo_userId" ON "todo" ("userId");
