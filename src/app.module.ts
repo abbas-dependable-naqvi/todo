@@ -1,27 +1,32 @@
 // app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import * as dotenv from 'dotenv';
 import { Todo } from './entities/todo.entity';
 import { User } from './entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 
-dotenv.config();
-
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      entities: ["src/entities/*.ts"],
-      migrations: ["src/migrations/*.ts"],
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_NAME'),
+        entities: [__dirname + '/entities/*.ts'],
+        migrations: [__dirname + '/migrations/*.ts'],
+        synchronize: false,
+      }),
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
     TypeOrmModule.forFeature([Todo, User]),
     AuthModule,

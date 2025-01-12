@@ -1,33 +1,22 @@
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateUsersTable1681234567890 implements MigrationInterface {
+  name = 'CreateUsersTable1681234567890';
+
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.createTable(
-      new Table({
-        name: 'user',
-        columns: [
-          {
-            name: 'id',
-            type: 'int',
-            isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'increment',
-          },
-          {
-            name: 'email',
-            type: 'varchar',
-            isUnique: true,
-          },
-          {
-            name: 'password',
-            type: 'varchar',
-          },
-        ],
-      })
-    );
+    await queryRunner.query(`
+      CREATE TABLE "user" (
+        "id" SERIAL NOT NULL,
+        "email" character varying NOT NULL UNIQUE,
+        "password" character varying NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "deletedAt" TIMESTAMP,
+        CONSTRAINT "PK_user" PRIMARY KEY ("id")
+      );
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('user');
+    await queryRunner.query(`DROP TABLE IF EXISTS "user"`);
   }
 }
