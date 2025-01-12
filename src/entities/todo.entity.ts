@@ -15,7 +15,7 @@ export enum TodoState {
   COMPLETED = 'completed',
 }
 
-@Entity('todo')
+@Entity()
 export class Todo {
   @PrimaryGeneratedColumn()
   id: number;

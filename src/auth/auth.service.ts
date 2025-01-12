@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { tokenExpiryTimeString } from 'src/const';
 
 @Injectable()
 export class AuthService {
@@ -18,11 +19,9 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ message: string; token: string }> {
-    console.log('1');
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
-    console.log('2 ', existingUser);
     if (existingUser) {
       throw new HttpException(
         'User with this email already exists',
@@ -35,14 +34,12 @@ export class AuthService {
       email,
       password: hashedPassword,
     });
-    console.log('3 ', newUser);
     await this.userRepository.save(newUser);
 
     const token = this.jwtService.sign(
       { id: newUser.id, email: newUser.email },
-      { expiresIn: '1h' },
+      { expiresIn: tokenExpiryTimeString },
     );
-    console.log('4 ', token);
     return {
       message: 'User created successfully',
       token,
@@ -71,7 +68,7 @@ export class AuthService {
 
     const token = this.jwtService.sign(
       { id: user.id, email: user.email },
-      { expiresIn: '1h' },
+      { expiresIn: tokenExpiryTimeString },
     );
     return {
       message: 'Login successful',

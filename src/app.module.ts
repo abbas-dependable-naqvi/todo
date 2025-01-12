@@ -7,6 +7,14 @@ import { AppService } from './app.service';
 import { Todo } from './entities/todo.entity';
 import { User } from './entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import {
+  dbHostString,
+  dbNameString,
+  dbPasswordString,
+  dbPortString,
+  dbType,
+  dbUsernameString,
+} from './const';
 
 @Module({
   imports: [
@@ -14,15 +22,16 @@ import { AuthModule } from './auth/auth.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
+        type: dbType,
+        host: configService.get<string>(dbHostString),
+        port: configService.get<number>(dbPortString),
+        username: configService.get<string>(dbUsernameString),
+        password: configService.get<string>(dbPasswordString),
+        database: configService.get<string>(dbNameString),
         entities: [__dirname + '/entities/*.ts'],
         migrations: [__dirname + '/migrations/*.ts'],
         synchronize: false,
+        logging: true,
       }),
     }),
     ConfigModule.forRoot({

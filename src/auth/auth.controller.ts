@@ -6,6 +6,7 @@ import {
   HttpStatus,
   UseGuards,
   Get,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,8 +22,6 @@ export class AuthController {
   async signup(@Body() createUserDto: CreateUserDto) {
     try {
       const { email, password } = createUserDto;
-      console.log('email ', email);
-      console.log('password ', password);
       return await this.authService.register(email, password);
     } catch (error) {
       throw new HttpException(
@@ -47,10 +46,11 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('me')
-  async getProfile(@Body() body: UserPayload) {
+  async getProfile(@Request() req: any) {
+    const payload: UserPayload = req.payload;
     return {
       message: 'User profile',
-      user: { id: body.id, email: body.email },
+      user: { id: payload.id, email: payload.email },
     };
   }
 }
