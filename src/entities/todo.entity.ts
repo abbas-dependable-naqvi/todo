@@ -6,8 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   DeleteDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Expose } from 'class-transformer';
 
 export enum TodoState {
   PENDING = 'pending',
@@ -15,21 +17,28 @@ export enum TodoState {
   COMPLETED = 'completed',
 }
 
-@Entity()
+@Entity('todo')
 export class Todo {
   @PrimaryGeneratedColumn()
+  @Expose()
   id: number;
 
   @CreateDateColumn()
+  @Expose()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @DeleteDateColumn()
   deletedAt: Date;
 
   @Column()
+  @Expose()
   title: string;
 
   @Column({ nullable: true })
+  @Expose()
   description: string;
 
   @Column({
@@ -37,6 +46,7 @@ export class Todo {
     enum: TodoState,
     default: TodoState.PENDING,
   })
+  @Expose()
   state: TodoState;
 
   @ManyToOne(() => User, (user) => user.todos)
@@ -44,5 +54,6 @@ export class Todo {
   user: User;
 
   @Column()
+  @Expose()
   userId: number;
 }

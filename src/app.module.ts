@@ -15,6 +15,7 @@ import {
   dbType,
   dbUsernameString,
 } from './const';
+import { TodoModule } from './todo/todo.module';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import {
         username: configService.get<string>(dbUsernameString),
         password: configService.get<string>(dbPasswordString),
         database: configService.get<string>(dbNameString),
-        entities: [__dirname + '/entities/*.ts'],
+        entities: [__dirname + '/entities/*.entity{.ts,.js}'],
         migrations: [__dirname + '/migrations/*.ts'],
         synchronize: false,
         logging: true,
@@ -39,6 +40,7 @@ import {
     }),
     TypeOrmModule.forFeature([Todo, User]),
     AuthModule,
+    TodoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -19,3 +19,5 @@ export const apiPrefix = 'api/v1';
 export const tokenExpiryTimeString = '4h';
 
 export const tokenType = 'Bearer';
+
+export const jwtSecretKey = 'JWT_SECRET';
