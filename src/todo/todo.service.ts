@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Todo } from 'src/entities/todo.entity';
-import { User } from 'src/entities/user.entity';
+import { Todo } from './../entities/todo.entity';
+import { User } from './../entities/user.entity';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { TodoState } from 'src/entities/todo.entity';
+import { TodoState } from './../entities/todo.entity';
 import { plainToClass } from 'class-transformer';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 
