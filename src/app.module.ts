@@ -3,6 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import {
+  dbHostString,
+  dbNameString,
+  dbPasswordString,
+  dbPortString,
+  dbType,
+  dbUsernameString,
+} from './const';
 
 @Module({
   imports: [
@@ -10,12 +18,12 @@ import { AppService } from './app.service';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
+        type: dbType,
+        host: configService.get<string>(dbHostString),
+        port: configService.get<number>(dbPortString),
+        username: configService.get<string>(dbUsernameString),
+        password: configService.get<string>(dbPasswordString),
+        database: configService.get<string>(dbNameString),
         entities: [__dirname + '/entities/*.ts'],
         migrations: [__dirname + '/migrations/*.ts'],
         synchronize: false,
