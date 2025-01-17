@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { tokenExpiryTimeString } from 'src/const';
+import { jwtSecretString, tokenExpiryTimeString } from 'src/const';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -17,7 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         global: true,
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: configService.get<string>(jwtSecretString),
         signOptions: { expiresIn: tokenExpiryTimeString },
       }),
     }),
