@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  DeleteDateColumn,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Todo } from './todo.entity';
 
 @Entity()
@@ -13,11 +6,11 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  deletedAt: Date | null;
 
   @Column({ unique: true })
   email: string;
