@@ -54,7 +54,7 @@ export class AuthService {
     if (!user) {
       throw new HttpException(
         'Invalid email or password',
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
@@ -62,7 +62,7 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new HttpException(
         'Invalid email or password',
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
