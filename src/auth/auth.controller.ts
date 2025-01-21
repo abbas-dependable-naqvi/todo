@@ -9,8 +9,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
+import { CreateUserPayloadDTO, LoginUserPayloadDTO } from './dto';
 import { AuthGuard } from './auth.gaurd';
 import { UserPayload } from 'src/types/payload';
 
@@ -23,7 +22,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signup(@Body() createUserDto: CreateUserDto) {
+  async signup(@Body() createUserDto: CreateUserPayloadDTO) {
     try {
       const { email, password } = createUserDto;
       return await this.authService.register(email, password);
@@ -40,7 +39,7 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() loginUserDto: LoginUserDto) {
+  async login(@Body() loginUserDto: LoginUserPayloadDTO) {
     try {
       const { email, password } = loginUserDto;
       return await this.authService.login(email, password);

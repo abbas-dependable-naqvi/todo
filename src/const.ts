@@ -13,8 +13,6 @@ export const defaultDBUsername = 'todo_admin';
 export const defaultDBPassword = 'adminpassword';
 export const defaultDBName = 'todo';
 
-export const jwtSecretString = 'JWT_SECRET';
-
 export const serverPort = 3000;
 export const apiPrefix = 'api/v1';
 

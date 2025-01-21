@@ -5,12 +5,14 @@ import {
   IsInt,
   MinLength,
   IsNotEmpty,
+  MaxLength,
 } from 'class-validator';
-import { TodoState } from 'src/entities/todo.entity';
+import { TodoState } from 'src/entities';
 
-export class UpdateTodoDto {
+export class CreateTodoPayloadDTO {
   @IsString()
   @MinLength(1, { message: 'Title must be at least 1 character long' })
+  @MaxLength(128, { message: 'Title must be at max 128 character long' })
   title: string;
 
   @IsEnum(TodoState, {
@@ -24,10 +26,27 @@ export class UpdateTodoDto {
   @IsNotEmpty({ message: 'User ID must be a valid number' })
   userId: number;
 
-  @IsInt()
-  updatedUserId: number;
-
   @IsString()
   @IsOptional()
+  @MaxLength(128, { message: 'Description must be at max 1028 character long' })
   description: string;
+}
+
+export class UpdateTodoPayloadDTO extends CreateTodoPayloadDTO {
+  @IsInt()
+  updatedUserId: number;
+}
+
+export class FindTodoQueryDTO {
+  @IsOptional()
+  @IsInt()
+  userId?: number;
+
+  @IsOptional()
+  @IsEnum(TodoState)
+  state?: TodoState;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
 }
