@@ -1,11 +1,9 @@
-// app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Todo } from './entities/todo.entity';
-import { User } from './entities/user.entity';
+import { User, Todo } from './entities';
 import { AuthModule } from './auth/auth.module';
 import {
   dbHostString,
@@ -15,6 +13,7 @@ import {
   dbType,
   dbUsernameString,
 } from './const';
+import { TodoModule } from './todo/todo.module';
 
 @Module({
   imports: [
@@ -28,10 +27,9 @@ import {
         username: configService.get<string>(dbUsernameString),
         password: configService.get<string>(dbPasswordString),
         database: configService.get<string>(dbNameString),
-        entities: [__dirname + '/entities/*.entity{.ts,.js}'],
-        migrations: [__dirname + '/migrations/*.ts'],
+        entities: [Todo, User],
+        migrations: [__dirname + '/migrations/*{.ts,.js}'],
         synchronize: false,
-        logging: true,
       }),
     }),
     ConfigModule.forRoot({
@@ -39,6 +37,7 @@ import {
     }),
     TypeOrmModule.forFeature([Todo, User]),
     AuthModule,
+    TodoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

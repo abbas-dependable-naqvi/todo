@@ -1,6 +1,5 @@
 import { DataSource } from 'typeorm';
-import { User } from './entities/user.entity';
-import { Todo } from './entities/todo.entity';
+import { User, Todo } from './entities';
 import * as dotenv from 'dotenv';
 import {
   dbType,
