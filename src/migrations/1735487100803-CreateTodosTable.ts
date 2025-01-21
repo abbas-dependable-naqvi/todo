@@ -30,30 +30,9 @@ export class UpdateTodoTableMigration1649246385000
       );
       CREATE INDEX "IDX_todo_userId" ON "todo" ("userId");
     `);
-
-    await queryRunner.query(`
-      CREATE OR REPLACE FUNCTION update_todo_updated_at()
-      RETURNS TRIGGER AS $$
-      BEGIN
-        NEW."updatedAt" = CURRENT_TIMESTAMP;
-        RETURN NEW;
-      END;
-      $$ language 'plpgsql';
-    `);
-
-    await queryRunner.query(`
-      CREATE TRIGGER set_todo_updated_at
-      BEFORE UPDATE ON "todo"
-      FOR EACH ROW
-      EXECUTE FUNCTION update_todo_updated_at();
-    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP TRIGGER IF EXISTS set_todo_updated_at ON "todo"`,
-    );
-    await queryRunner.query(`DROP FUNCTION IF EXISTS update_todo_updated_at`);
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_todo_userId"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "todo"`);
     await queryRunner.query(`DROP TYPE IF EXISTS "todo_state"`);

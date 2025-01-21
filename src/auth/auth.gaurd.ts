@@ -24,11 +24,11 @@ export class AuthGuard implements CanActivate {
     }
     try {
       const secret = this.configService.get<string>(jwtSecretKey);
-      const payload = this.jwtService.verify(token, {
+      const authPayload = this.jwtService.verify(token, {
         secret,
       });
 
-      request['payload'] = payload;
+      request['auth'] = authPayload;
     } catch {
       throw new UnauthorizedException();
     }

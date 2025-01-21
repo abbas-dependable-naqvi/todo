@@ -4,27 +4,22 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Todo } from './../entities/todo.entity';
-import { User } from './../entities/user.entity';
-import { CreateTodoDto } from './dto/create-todo.dto';
-import { TodoState } from './../entities/todo.entity';
+import { TodoState, Todo } from 'src/entities';
 import { plainToClass } from 'class-transformer';
-import { UpdateTodoDto } from './dto/update-todo.dto';
+import { CreateTodoPayloadDTO, UpdateTodoPayloadDTO } from './dto';
+import { TodoRepository } from './todo.repository';
+import { AuthRepository } from 'src/auth/auth.repository';
 
 @Injectable()
 export class TodoService {
   constructor(
-    @InjectRepository(Todo) private todoRepository: Repository<Todo>,
-    @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly todoRepository: TodoRepository,
+    private readonly authRepository: AuthRepository,
   ) {}
 
-  async create(createTodoPayload: CreateTodoDto): Promise<Todo> {
+  async create(createTodoPayload: CreateTodoPayloadDTO): Promise<Todo> {
     try {
-      const user = await this.userRepository.findOne({
-        where: { id: createTodoPayload.userId },
-      });
+      const user = await this.authRepository.findById(createTodoPayload.userId);
 
       if (!user) {
         throw new NotFoundException(
@@ -34,50 +29,49 @@ export class TodoService {
 
       const state = createTodoPayload.state ?? TodoState.PENDING;
 
-      const todo = this.todoRepository.create({
-        title: createTodoPayload.title,
-        description: createTodoPayload.description,
-        state: state,
-        userId: createTodoPayload.userId,
-        user: user,
-      });
+      const todo = new Todo();
+      todo.title = createTodoPayload.title;
+      todo.description = createTodoPayload.description;
+      todo.state = state;
+      todo.userId = createTodoPayload.userId;
 
       const savedTodo = await this.todoRepository.save(todo);
 
-      const sanitizedTodo = plainToClass(Todo, savedTodo, {
-        excludeExtraneousValues: true,
-      });
-
-      return sanitizedTodo;
+      return plainToClass(Todo, savedTodo, { excludeExtraneousValues: true });
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-
       throw new InternalServerErrorException(
         'An error occurred while saving the todo',
       );
     }
   }
 
-  async find(todoID: number, userID: number) {
-    const todo = await this.todoRepository.findOne({
-      where: { id: todoID },
-    });
+  async find(todoID: number, userID: number): Promise<Todo> {
+    try {
+      const todo = await this.todoRepository.findById(todoID);
 
-    if (!todo) {
-      throw new NotFoundException(`Todo with ID ${todoID} not found`);
+      if (!todo) {
+        throw new NotFoundException(`Todo with ID ${todoID} not found`);
+      }
+
+      if (todo.userId !== userID) {
+        throw new UnauthorizedException("You don't have access to this todo");
+      }
+
+      return plainToClass(Todo, todo, { excludeExtraneousValues: true });
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while fetching the todo',
+      );
     }
-
-    if (todo.userId !== userID) {
-      throw new UnauthorizedException("You don't have access to this todo");
-    }
-
-    const sanitizedTodo = plainToClass(Todo, todo, {
-      excludeExtraneousValues: true,
-    });
-
-    return sanitizedTodo;
   }
 
   async findAll(filters: {
@@ -86,26 +80,7 @@ export class TodoService {
     title?: string;
   }): Promise<Todo[]> {
     try {
-      const { userId, state, title } = filters;
-
-      const queryBuilder = this.todoRepository.createQueryBuilder('todo');
-
-      if (userId) {
-        queryBuilder.andWhere('todo.userId = :userId', { userId });
-      }
-
-      if (state) {
-        queryBuilder.andWhere('todo.state = :state', { state });
-      }
-
-      if (title) {
-        queryBuilder.andWhere('todo.title LIKE :title', {
-          title: `%${title}%`,
-        });
-      }
-
-      const todos = await queryBuilder.getMany();
-
+      const todos = await this.todoRepository.findAll(filters);
       return plainToClass(Todo, todos, { excludeExtraneousValues: true });
     } catch (error) {
       throw new InternalServerErrorException(
@@ -114,21 +89,21 @@ export class TodoService {
     }
   }
 
-  async update(id: number, updateTodoPayload: UpdateTodoDto): Promise<Todo> {
+  async update(
+    id: number,
+    updateTodoPayload: UpdateTodoPayloadDTO,
+  ): Promise<Todo> {
     try {
-      const todo = await this.todoRepository.findOne({
-        where: { id },
-        relations: ['user'],
-      });
+      const todo = await this.todoRepository.findById(id);
 
       if (!todo) {
         throw new NotFoundException(`Todo with ID ${id} not found`);
       }
 
       if (updateTodoPayload.updatedUserId) {
-        const updatedUser = await this.userRepository.findOne({
-          where: { id: updateTodoPayload.updatedUserId },
-        });
+        const updatedUser = await this.authRepository.findById(
+          updateTodoPayload.updatedUserId,
+        );
 
         if (!updatedUser) {
           throw new NotFoundException(
@@ -137,7 +112,6 @@ export class TodoService {
         }
 
         todo.userId = updateTodoPayload.updatedUserId;
-        todo.user = updatedUser;
       }
 
       if (updateTodoPayload.title) {
@@ -154,11 +128,7 @@ export class TodoService {
 
       const updatedTodo = await this.todoRepository.save(todo);
 
-      const sanitizedTodo = plainToClass(Todo, updatedTodo, {
-        excludeExtraneousValues: true,
-      });
-
-      return sanitizedTodo;
+      return plainToClass(Todo, updatedTodo, { excludeExtraneousValues: true });
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

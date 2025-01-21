@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../entities/user.entity';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { jwtSecretKey, tokenExpiryTimeString } from 'src/const';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Todo } from 'src/entities/todo.entity';
+import { User, Todo } from 'src/entities';
+import { AuthRepository } from './auth.repository';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { Todo } from 'src/entities/todo.entity';
       }),
     }),
   ],
-  providers: [AuthService],
+  providers: [AuthService, AuthRepository],
   controllers: [AuthController],
 })
 export class AuthModule {}

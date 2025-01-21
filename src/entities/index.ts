@@ -7,8 +7,8 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
-import { User } from './user.entity';
 import { Expose } from 'class-transformer';
 
 export enum TodoState {
@@ -17,8 +17,7 @@ export enum TodoState {
   COMPLETED = 'completed',
 }
 
-@Entity('todo')
-export class Todo {
+export class BaseEntity {
   @PrimaryGeneratedColumn()
   @Expose()
   id: number;
@@ -32,7 +31,22 @@ export class Todo {
 
   @DeleteDateColumn()
   deletedAt: Date;
+}
 
+@Entity('user')
+export class User extends BaseEntity {
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  password: string;
+
+  @OneToMany(() => Todo, (todo) => todo.user)
+  todos: Todo[];
+}
+
+@Entity('todo')
+export class Todo extends BaseEntity {
   @Column()
   @Expose()
   title: string;

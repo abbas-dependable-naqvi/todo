@@ -4,3 +4,7 @@ export type UserPayload = {
   iat: number;
   exp: number;
 };
+
+export interface GetTodoRequest extends Request {
+  auth: UserPayload;
+}

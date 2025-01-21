@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { AuthRepository } from './auth.repository';
 import { tokenExpiryTimeString } from 'src/const';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -19,60 +16,74 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ message: string; token: string }> {
-    const existingUser = await this.userRepository.findOne({
-      where: { email },
-    });
-    if (existingUser) {
+    try {
+      const existingUser = await this.authRepository.findUserByEmail(email);
+      if (existingUser) {
+        throw new HttpException(
+          'User with this email already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = await this.authRepository.createUser(
+        email,
+        hashedPassword,
+      );
+
+      const token = this.jwtService.sign(
+        { id: newUser.id, email: newUser.email },
+        { expiresIn: tokenExpiryTimeString },
+      );
+      return {
+        message: 'User created successfully',
+        token,
+      };
+    } catch (error) {
       throw new HttpException(
-        'User with this email already exists',
-        HttpStatus.BAD_REQUEST,
+        error.message || 'An error occurred during registration',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = this.userRepository.create({
-      email,
-      password: hashedPassword,
-    });
-    await this.userRepository.save(newUser);
-
-    const token = this.jwtService.sign(
-      { id: newUser.id, email: newUser.email },
-      { expiresIn: tokenExpiryTimeString },
-    );
-    return {
-      message: 'User created successfully',
-      token,
-    };
   }
 
   async login(
     email: string,
     password: string,
   ): Promise<{ message: string; token: string }> {
-    const user = await this.userRepository.findOne({ where: { email } });
-    if (!user) {
+    try {
+      const user = await this.authRepository.findUserByEmail(email);
+      if (!user) {
+        throw new HttpException(
+          'Invalid email or password',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        throw new HttpException(
+          'Invalid email or password',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      const token = this.jwtService.sign(
+        { id: user.id, email: user.email },
+        { expiresIn: tokenExpiryTimeString },
+      );
+      return {
+        message: 'Login successful',
+        token,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException(
-        'Invalid email or password',
-        HttpStatus.BAD_REQUEST,
+        error.message || 'An error occurred during login',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new HttpException(
-        'Invalid email or password',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const token = this.jwtService.sign(
-      { id: user.id, email: user.email },
-      { expiresIn: tokenExpiryTimeString },
-    );
-    return {
-      message: 'Login successful',
-      token,
-    };
   }
 }
