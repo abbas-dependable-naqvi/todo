@@ -14,6 +14,7 @@ import {
   dbUsernameString,
 } from './const';
 import { TodoModule } from './todo/todo.module';
+import { UpdateUserAndTodoTables1737961180149 } from './migrations/1737961180149-UpdateUserAndTodoTables';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { TodoModule } from './todo/todo.module';
         password: configService.get<string>(dbPasswordString),
         database: configService.get<string>(dbNameString),
         entities: [Todo, User],
-        migrations: [__dirname + '/migrations/*{.ts,.js}'],
+        migrations: [UpdateUserAndTodoTables1737961180149],
         synchronize: false,
       }),
     }),

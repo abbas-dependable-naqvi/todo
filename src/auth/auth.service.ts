@@ -40,6 +40,10 @@ export class AuthService {
         token,
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       throw new HttpException(
         error.message || 'An error occurred during registration',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -82,6 +86,31 @@ export class AuthService {
       }
       throw new HttpException(
         error.message || 'An error occurred during login',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getMe(
+    userId: number,
+  ): Promise<{ message: string; user: { id: number; email: string } }> {
+    try {
+      const user = await this.authRepository.findById(userId);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      return {
+        message: 'User profile',
+        user: { id: user.id, email: user.email },
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        error.message || 'An error occurred while fetching user details',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

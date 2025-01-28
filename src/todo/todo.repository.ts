@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
-import { Todo } from 'src/entities';
+import { Todo, TodoState } from 'src/entities';
 
 @Injectable()
 export class TodoRepository {
@@ -20,7 +20,11 @@ export class TodoRepository {
     }
   }
 
-  async findAll(filters: Record<string, any>): Promise<Todo[]> {
+  async findAll(filters: {
+    userId?: number;
+    state?: TodoState;
+    title?: string;
+  }): Promise<Todo[]> {
     try {
       const queryBuilder = this.repository.createQueryBuilder('todo');
 

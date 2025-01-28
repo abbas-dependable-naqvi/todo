@@ -9,7 +9,6 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Expose } from 'class-transformer';
 
 export enum TodoState {
   PENDING = 'pending',
@@ -19,14 +18,12 @@ export enum TodoState {
 
 export class BaseEntity {
   @PrimaryGeneratedColumn()
-  @Expose()
   id: number;
 
-  @CreateDateColumn()
-  @Expose()
+  @CreateDateColumn({ nullable: false })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ nullable: false })
   updatedAt: Date;
 
   @DeleteDateColumn()
@@ -35,39 +32,55 @@ export class BaseEntity {
 
 @Entity('user')
 export class User extends BaseEntity {
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: false, length: 128 })
   email: string;
 
-  @Column()
+  @Column({ nullable: false, length: 32 })
   password: string;
 
-  @OneToMany(() => Todo, (todo) => todo.user)
+  @OneToMany(() => Todo, (todo) => todo.user, { cascade: true })
   todos: Todo[];
 }
 
 @Entity('todo')
 export class Todo extends BaseEntity {
-  @Column()
-  @Expose()
+  @Column({ nullable: false, length: 256 })
   title: string;
 
-  @Column({ nullable: true })
-  @Expose()
+  @Column({ nullable: true, length: 512 })
   description: string;
 
   @Column({
     type: 'enum',
     enum: TodoState,
     default: TodoState.PENDING,
+    nullable: false,
   })
-  @Expose()
   state: TodoState;
 
-  @ManyToOne(() => User, (user) => user.todos)
+  @ManyToOne(() => User, (user) => user.todos, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column()
-  @Expose()
+  @Column({ nullable: false })
   userId: number;
+}
+
+export class TodoResponseDTO {
+  id: number;
+  title: string;
+  description: string | null;
+  state: TodoState;
+  userId: number;
+
+  constructor(todo: Todo) {
+    this.id = todo.id;
+    this.title = todo.title;
+    this.description = todo.description;
+    this.state = todo.state;
+    this.userId = todo.userId;
+  }
 }

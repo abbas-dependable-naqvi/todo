@@ -10,7 +10,6 @@ export const dbPasswordString = 'DB_PASSWORD';
 export const defaultDBPort = '5432';
 export const defaultDBHost = 'localhost';
 export const defaultDBUsername = 'todo_admin';
-export const defaultDBPassword = 'adminpassword';
 export const defaultDBName = 'todo';
 
 export const serverPort = 3000;
