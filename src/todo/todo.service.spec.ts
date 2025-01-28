@@ -1,16 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TodoService } from './todo.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Todo, TodoState } from './../entities/todo.entity';
-import { User } from './../entities/user.entity';
 import { Repository } from 'typeorm';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
+
+import { TodoService } from './todo.service';
+import { Todo, TodoState, User } from 'src/entities';
 import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
-import { CreateTodoDto } from './dto/create-todo.dto';
+import { CreateTodoPayloadDTO } from './dto';
 
 describe('TodoService', () => {
   let service: TodoService;
@@ -122,7 +122,7 @@ describe('TodoService', () => {
       todos: [],
     };
 
-    const mockCreateTodoPayload: CreateTodoDto = {
+    const mockCreateTodoPayload: CreateTodoPayloadDTO = {
       title: 'test todo',
       state: TodoState.PENDING,
       userId: 1,

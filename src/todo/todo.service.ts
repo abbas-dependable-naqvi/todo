@@ -1,11 +1,12 @@
+// todo.service.ts
+
 import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TodoState, Todo } from 'src/entities';
-import { plainToClass } from 'class-transformer';
+import { TodoState, Todo, TodoResponseDTO } from 'src/entities';
 import { CreateTodoPayloadDTO, UpdateTodoPayloadDTO } from './dto';
 import { TodoRepository } from './todo.repository';
 import { AuthRepository } from 'src/auth/auth.repository';
@@ -17,7 +18,9 @@ export class TodoService {
     private readonly authRepository: AuthRepository,
   ) {}
 
-  async create(createTodoPayload: CreateTodoPayloadDTO): Promise<Todo> {
+  async create(
+    createTodoPayload: CreateTodoPayloadDTO,
+  ): Promise<TodoResponseDTO> {
     try {
       const user = await this.authRepository.findById(createTodoPayload.userId);
 
@@ -37,7 +40,7 @@ export class TodoService {
 
       const savedTodo = await this.todoRepository.save(todo);
 
-      return plainToClass(Todo, savedTodo, { excludeExtraneousValues: true });
+      return new TodoResponseDTO(savedTodo);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -48,7 +51,7 @@ export class TodoService {
     }
   }
 
-  async find(todoID: number, userID: number): Promise<Todo> {
+  async find(todoID: number, userID: number): Promise<TodoResponseDTO> {
     try {
       const todo = await this.todoRepository.findById(todoID);
 
@@ -60,7 +63,7 @@ export class TodoService {
         throw new UnauthorizedException("You don't have access to this todo");
       }
 
-      return plainToClass(Todo, todo, { excludeExtraneousValues: true });
+      return new TodoResponseDTO(todo);
     } catch (error) {
       if (
         error instanceof NotFoundException ||
@@ -78,10 +81,11 @@ export class TodoService {
     userId?: number;
     state?: TodoState;
     title?: string;
-  }): Promise<Todo[]> {
+  }): Promise<TodoResponseDTO[]> {
     try {
       const todos = await this.todoRepository.findAll(filters);
-      return plainToClass(Todo, todos, { excludeExtraneousValues: true });
+
+      return todos.map((todo) => new TodoResponseDTO(todo));
     } catch (error) {
       throw new InternalServerErrorException(
         error || 'An error occurred while fetching the todos',
@@ -92,7 +96,7 @@ export class TodoService {
   async update(
     id: number,
     updateTodoPayload: UpdateTodoPayloadDTO,
-  ): Promise<Todo> {
+  ): Promise<TodoResponseDTO> {
     try {
       const todo = await this.todoRepository.findById(id);
 
@@ -128,7 +132,7 @@ export class TodoService {
 
       const updatedTodo = await this.todoRepository.save(todo);
 
-      return plainToClass(Todo, updatedTodo, { excludeExtraneousValues: true });
+      return new TodoResponseDTO(updatedTodo);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

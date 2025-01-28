@@ -1,4 +1,4 @@
-export type UserPayload = {
+export type UserAuthData = {
   id: number;
   email: string;
   iat: number;
@@ -6,5 +6,5 @@ export type UserPayload = {
 };
 
 export interface GetTodoRequest extends Request {
-  auth: UserPayload;
+  auth: UserAuthData;
 }

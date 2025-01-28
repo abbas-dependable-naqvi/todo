@@ -5,7 +5,6 @@ import {
   dbType,
   defaultDBHost,
   defaultDBName,
-  defaultDBPassword,
   defaultDBPort,
   defaultDBUsername,
 } from './const';
@@ -17,10 +16,10 @@ const AppDataSource = new DataSource({
   host: process.env.DB_HOST || defaultDBHost,
   port: parseInt(process.env.DB_PORT || defaultDBPort, 10),
   username: process.env.DB_USERNAME || defaultDBUsername,
-  password: process.env.DB_PASSWORD || defaultDBPassword,
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || defaultDBName,
   entities: [User, Todo],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['dist/migrations/*.js'],
   synchronize: false,
 });
 
